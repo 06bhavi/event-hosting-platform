@@ -1,0 +1,12 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+crash.log
+# Keys and secrets
+*.pem
+*.key
+.env
+# Generated
+ansible/inventory.ini
