@@ -1,0 +1,55 @@
+---
+- name: Install and configure the web server
+  block:
+    - name: Install Nginx
+      ansible.builtin.apt:
+        name: nginx
+        state: present
+        lock_timeout: 120
+
+    - name: Create website directory
+      ansible.builtin.file:
+        path: "{{ web_root }}"
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: "0755"
+
+    - name: Deploy the registration page
+      ansible.builtin.template:
+        src: index.html.j2
+        dest: "{{ web_root }}/index.html"
+        owner: www-data
+        group: www-data
+        mode: "0644"
+
+    - name: Deploy Nginx site configuration
+      ansible.builtin.template:
+        src: nginx_site.conf.j2
+        dest: /etc/nginx/sites-available/event-site
+        mode: "0644"
+      notify: Restart nginx
+
+    - name: Enable our site
+      ansible.builtin.file:
+        src: /etc/nginx/sites-available/event-site
+        dest: /etc/nginx/sites-enabled/event-site
+        state: link
+      notify: Restart nginx
+
+    - name: Remove the default Nginx site
+      ansible.builtin.file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: Restart nginx
+
+    - name: Make sure Nginx is running and starts on boot
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+
+  rescue:
+    - name: Report failure
+      ansible.builtin.debug:
+        msg: "Web server setup failed on {{ inventory_hostname }}. Check the error above."

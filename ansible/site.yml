@@ -1,0 +1,14 @@
+---
+- name: Base setup for all servers
+  hosts: all
+  become: true
+  roles:
+    - common
+  tags: common
+
+- name: Deploy the event registration website
+  hosts: web
+  become: true
+  roles:
+    - webserver
+  tags: web

@@ -1,0 +1,17 @@
+---
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+    lock_timeout: 120
+
+- name: Install base packages
+  ansible.builtin.apt:
+    name:
+      - curl
+      - git
+      - vim
+      - htop
+      - unzip
+    state: present
+    lock_timeout: 120
