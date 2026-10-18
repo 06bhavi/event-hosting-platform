@@ -1,0 +1,3 @@
+---
+nagios_admin_user: nagiosadmin
+nagios_conf_dir: /etc/nagios4

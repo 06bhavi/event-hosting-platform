@@ -12,3 +12,15 @@
   roles:
     - webserver
   tags: web
+
+- name: Install Nagios monitoring server
+  hosts: monitoring
+  become: true
+  vars_prompt:
+    - name: nagios_password
+      prompt: "Set the Nagios web admin password"
+      private: true
+      default: "Nagios@123"
+  roles:
+    - nagios_server
+  tags: monitoring

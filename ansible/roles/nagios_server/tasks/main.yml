@@ -1,0 +1,84 @@
+---
+- name: Install and configure Nagios
+  block:
+    - name: Install Apache, Nagios and plugins
+      ansible.builtin.apt:
+        name:
+          - apache2
+          - apache2-utils
+          - nagios4
+          - monitoring-plugins-basic
+        state: present
+        update_cache: true
+        lock_timeout: 120
+
+    - name: Enable required Apache modules
+      ansible.builtin.command: "a2enmod {{ item }}"
+      loop:
+        - cgi
+        - auth_basic
+        - authn_file
+        - authz_user
+      register: a2en
+      changed_when: "'Enabling module' in a2en.stdout"
+      notify: Restart apache
+
+    - name: Set the Nagios web admin password
+      ansible.builtin.command: >
+        htpasswd -b -c {{ nagios_conf_dir }}/htpasswd.users
+        {{ nagios_admin_user }} {{ nagios_password }}
+      no_log: true
+      changed_when: false
+
+    - name: Allow Apache to read the password file
+      ansible.builtin.file:
+        path: "{{ nagios_conf_dir }}/htpasswd.users"
+        owner: root
+        group: www-data
+        mode: "0640"
+
+    - name: Deploy Apache configuration for the Nagios web interface
+      ansible.builtin.template:
+        src: nagios4-apache.conf.j2
+        dest: /etc/apache2/conf-available/nagios4-cgi.conf
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Restart apache
+
+    - name: Turn on Nagios web authentication
+      ansible.builtin.lineinfile:
+        path: "{{ nagios_conf_dir }}/cgi.cfg"
+        regexp: '^use_authentication='
+        line: 'use_authentication=1'
+
+    - name: Check Apache configuration
+      ansible.builtin.command: apache2ctl configtest
+      changed_when: false
+
+    - name: Deploy monitoring configuration for our web server
+      ansible.builtin.template:
+        src: event-platform.cfg.j2
+        dest: "{{ nagios_conf_dir }}/conf.d/event-platform.cfg"
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Restart nagios
+
+    - name: Validate Nagios configuration before applying
+      ansible.builtin.command: "nagios4 -v {{ nagios_conf_dir }}/nagios.cfg"
+      changed_when: false
+
+    - name: Make sure Apache and Nagios are running
+      ansible.builtin.service:
+        name: "{{ item }}"
+        state: started
+        enabled: true
+      loop:
+        - apache2
+        - nagios4
+
+  rescue:
+    - name: Report failure
+      ansible.builtin.debug:
+        msg: "Nagios setup failed on {{ inventory_hostname }}. Read the error above."

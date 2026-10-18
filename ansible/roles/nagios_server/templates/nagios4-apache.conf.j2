@@ -1,0 +1,23 @@
+# Managed by Ansible - Nagios web interface (password protected)
+
+ScriptAlias /cgi-bin/nagios4 /usr/lib/cgi-bin/nagios4
+ScriptAlias /nagios4/cgi-bin /usr/lib/cgi-bin/nagios4
+
+Alias /nagios4/stylesheets /etc/nagios4/stylesheets
+Alias /nagios4 /usr/share/nagios4/htdocs
+
+<DirectoryMatch (/usr/share/nagios4/htdocs|/usr/lib/cgi-bin/nagios4|/etc/nagios4/stylesheets)>
+    Options FollowSymLinks
+    DirectoryIndex index.php index.html
+    AllowOverride AuthConfig
+
+    AuthType Basic
+    AuthName "Nagios4 Monitoring"
+    AuthBasicProvider file
+    AuthUserFile /etc/nagios4/htpasswd.users
+    Require valid-user
+</DirectoryMatch>
+
+<Directory /usr/share/nagios4/htdocs>
+    Options +ExecCGI
+</Directory>

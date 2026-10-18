@@ -13,5 +13,5 @@ output "website_url" {
 }
 
 output "nagios_url" {
-  value = "http://${aws_instance.nagios.public_ip}/nagios"
+  value = "http://${aws_instance.nagios.public_ip}/nagios4"
 }
