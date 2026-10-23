@@ -56,6 +56,14 @@
       ansible.builtin.command: apache2ctl configtest
       changed_when: false
 
+    - name: Install custom Nagios plugin
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../nagios/plugins/check_registration_app.py"
+        dest: /usr/lib/nagios/plugins/check_registration_app.py
+        owner: root
+        group: root
+        mode: "0755"
+
     - name: Deploy monitoring configuration for our web server
       ansible.builtin.template:
         src: event-platform.cfg.j2

@@ -45,3 +45,18 @@ define service {
     check_interval        1
     retry_interval        1
 }
+
+define command {
+    command_name    check_registration_app
+    command_line    $USER1$/check_registration_app.py -H $HOSTADDRESS$ -s "$ARG1$" -w $ARG2$ -c $ARG3$
+}
+
+define service {
+    use                   generic-service
+    host_name             web-server
+    service_description   Registration Page
+    check_command         check_registration_app!Register!1!3
+    max_check_attempts    3
+    check_interval        1
+    retry_interval        1
+}
