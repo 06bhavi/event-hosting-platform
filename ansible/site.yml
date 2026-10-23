@@ -24,3 +24,10 @@
   roles:
     - nagios_server
   tags: monitoring
+
+- name: Apply Puppet baseline configuration
+  hosts: all
+  become: true
+  roles:
+    - puppet_baseline
+  tags: puppet

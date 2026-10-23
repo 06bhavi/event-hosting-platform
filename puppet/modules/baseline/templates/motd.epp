@@ -1,0 +1,11 @@
+<%- | String $club_name | -%>
+==================================================
+ <%= $club_name %> - Event Hosting Platform
+ Managed by Puppet: manual changes will be reverted
+==================================================
+ Hostname : <%= $facts['networking']['hostname'] %>
+ IP       : <%= $facts['networking']['ip'] %>
+ OS       : <%= $facts['os']['name'] %> <%= $facts['os']['release']['full'] %>
+ CPUs     : <%= $facts['processors']['count'] %>
+ Memory   : <%= $facts['memory']['system']['total'] %>
+

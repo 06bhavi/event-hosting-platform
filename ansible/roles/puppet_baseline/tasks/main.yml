@@ -1,0 +1,37 @@
+---
+- name: Install Puppet
+  ansible.builtin.apt:
+    name: puppet-agent
+    state: present
+    update_cache: true
+    lock_timeout: 120
+
+- name: Copy Puppet code to the server
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../puppet/"
+    dest: /opt/event-platform/puppet/
+    owner: root
+    group: root
+    directory_mode: "0755"
+    mode: "0644"
+
+- name: Check Puppet syntax
+  ansible.builtin.command: >
+    puppet parser validate
+    /opt/event-platform/puppet/manifests/site.pp
+    /opt/event-platform/puppet/modules/baseline/manifests/init.pp
+  changed_when: false
+
+- name: Apply the baseline with puppet apply
+  ansible.builtin.command: >
+    puppet apply
+    --modulepath=/opt/event-platform/puppet/modules
+    --detailed-exitcodes
+    /opt/event-platform/puppet/manifests/site.pp
+  register: puppet_run
+  failed_when: puppet_run.rc not in [0, 2]
+  changed_when: puppet_run.rc == 2
+
+- name: Show what Puppet did
+  ansible.builtin.debug:
+    var: puppet_run.stdout_lines
